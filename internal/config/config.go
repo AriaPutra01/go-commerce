@@ -11,12 +11,13 @@ type Config struct {
 	Port   string `mapstructure:"PORT"`
 	AppEnv string `mapstructure:"APP_ENV"`
 
-	DBHost     string `mapstructure:"DB_HOST"`
-	DBPort     int    `mapstructure:"DB_PORT"`
-	DBDatabase string `mapstructure:"DB_DATABASE"`
-	DBUsername string `mapstructure:"DB_USERNAME"`
-	DBPassword string `mapstructure:"DB_PASSWORD"`
-	DBSchema   string `mapstructure:"DB_SCHEMA"`
+	DBHost          string `mapstructure:"DB_HOST"`
+	DBPort          int    `mapstructure:"DB_PORT"`
+	DBDatabase      string `mapstructure:"DB_DATABASE"`
+	DBUsername      string `mapstructure:"DB_USERNAME"`
+	DBPassword      string `mapstructure:"DB_PASSWORD"`
+	DBSchema        string `mapstructure:"DB_SCHEMA"`
+	DBMigrationPath string `mapstructure:"DB_MIGRATION_PATH"`
 
 	DBPoolIdle     int `mapstructure:"DB_POOL_IDLE"`
 	DBPoolMax      int `mapstructure:"DB_POOL_MAX"`
