@@ -63,4 +63,8 @@ watch:
             fi; \
         fi
 
-.PHONY: all build run test clean watch docker-run docker-down itest
+# Create Migration
+migrate-create: 
+	migrate create -ext sql -dir db/migrations $(value)
+
+.PHONY: all build run test clean watch docker-run docker-down itest migrate-create

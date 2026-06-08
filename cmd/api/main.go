@@ -25,7 +25,7 @@ func main() {
 	})
 
 	server := &http.Server{
-		Addr:         cfg.Port,
+		Addr:         fmt.Sprintf(":%s", cfg.Port),
 		Handler:      engine,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
