@@ -10,12 +10,14 @@ import (
 	"github.com/AriaPutra01/go-commerce/internal/config"
 	"github.com/AriaPutra01/go-commerce/internal/database"
 	"github.com/AriaPutra01/go-commerce/internal/logger"
+	"github.com/AriaPutra01/go-commerce/internal/token"
 )
 
 func main() {
 	cfg := config.Load()
 	engine := app.NewGin()
 	log := logger.NewLogger(cfg)
+	jwtMaker := token.NewJWTMaker(cfg.SecretKey)
 	db := database.NewDatabase(cfg, log)
 	rdb := cache.NewRedis(cfg)
 
@@ -25,6 +27,7 @@ func main() {
 		App:      engine,
 		Log:      log,
 		Config:   cfg,
+		JWTMaker: jwtMaker,
 	})
 
 	server := &http.Server{

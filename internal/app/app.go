@@ -8,7 +8,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/AriaPutra01/go-commerce/internal/cache"
 	"github.com/AriaPutra01/go-commerce/internal/config"
+	"github.com/AriaPutra01/go-commerce/internal/module/auth"
+	"github.com/AriaPutra01/go-commerce/internal/token"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -17,16 +20,21 @@ import (
 )
 
 type BootstrapConfig struct {
-	DB     *gorm.DB
-	RDB    *redis.Client
-	App    *gin.Engine
-	Log    *logrus.Logger
-	Config *config.Config
+	DB       *gorm.DB
+	RDB      *redis.Client
+	App      *gin.Engine
+	Log      *logrus.Logger
+	Config   *config.Config
+	JWTMaker *token.JWTMaker
 }
 
-// THIS IS FILLED BY INTERNAL METHOD DECLARATIONS SUCH AS handler, dto, service, model, repository
 func Bootstrap(config *BootstrapConfig) {
-
+	cache := cache.NewRedisStore(config.RDB)
+	authRepository := auth.NewRepository(config.DB)
+	authService := auth.NewService(config.JWTMaker, authRepository, cache)
+	authHandler := auth.NewHandler(authService)
+	authRoute := auth.NewRoute(config.App, authHandler)
+	authRoute.RegisterRoute()
 }
 
 func GracefulShutdown(apiServer *http.Server, done chan bool) {

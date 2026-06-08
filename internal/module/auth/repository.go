@@ -8,6 +8,7 @@ import (
 
 type Repository interface {
 	Transaction(ctx context.Context, fn func(repo Repository) error) error
+	FindUserByEmail(ctx context.Context, email string) (*User, error)
 }
 
 type repository struct {
@@ -28,4 +29,12 @@ func (r *repository) Transaction(ctx context.Context, fn func(repo Repository) e
 		}
 		return nil
 	})
+}
+
+func (r *repository) FindUserByEmail(ctx context.Context, email string) (*User, error) {
+	user := new(User)
+	if err := r.db.WithContext(ctx).Where("email = ?", email).First(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }
