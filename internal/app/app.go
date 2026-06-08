@@ -11,12 +11,14 @@ import (
 	"github.com/AriaPutra01/go-commerce/internal/config"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type BootstrapConfig struct {
 	DB     *gorm.DB
+	RDB    *redis.Client
 	App    *gin.Engine
 	Log    *logrus.Logger
 	Config *config.Config

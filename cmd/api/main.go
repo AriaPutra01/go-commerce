@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/AriaPutra01/go-commerce/internal/app"
+	"github.com/AriaPutra01/go-commerce/internal/cache"
 	"github.com/AriaPutra01/go-commerce/internal/config"
 	"github.com/AriaPutra01/go-commerce/internal/database"
 	"github.com/AriaPutra01/go-commerce/internal/logger"
@@ -16,9 +17,11 @@ func main() {
 	engine := app.NewGin()
 	log := logger.NewLogger(cfg)
 	db := database.NewDatabase(cfg, log)
+	rdb := cache.NewRedis(cfg)
 
 	app.Bootstrap(&app.BootstrapConfig{
 		DB:       db,
+		RDB:      rdb,
 		App:      engine,
 		Log:      log,
 		Config:   cfg,

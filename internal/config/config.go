@@ -24,6 +24,10 @@ type Config struct {
 	DBPoolLifetime int `mapstructure:"DB_POOL_LIFETIME"`
 
 	LogLevel int `mapstructure:"LOG_LEVEL"`
+
+	RedisHost     string `mapstructure:"REDIS_HOST"`
+	RedisPort     string `mapstructure:"REDIS_PORT"`
+	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
 }
 
 func Load() *Config {
