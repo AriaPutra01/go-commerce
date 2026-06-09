@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"time"
 
@@ -31,11 +30,11 @@ func NewService(jwt *token.JWTMaker, repository Repository, cache cache.Cache) *
 func (s *service) Login(ctx context.Context, req *LoginRequest) (*LoginResponse, error) {
 	user, err := s.repository.FindUserByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, errors.New("Invalid email or password")
+		return nil, constant.ErrInvalidCredentials
 	}
 
 	if err := util.CheckPassword(user.PasswordHash, req.Password); err != nil {
-		return nil, errors.New("Invalid email or password")
+		return nil, constant.ErrInvalidCredentials
 	}
 
 	accessToken, err := s.jwt.GenerateToken(user.ID.String(), user.Email, user.Role, 15*time.Minute)
@@ -62,7 +61,7 @@ func (s *service) Register(ctx context.Context, req *RegisterRequest) error {
 			return err
 		}
 		if isTaken {
-			return errors.New("email is used")
+			return constant.ErrEmailAlreadyExists
 		}
 
 		hashedPass, err := util.HashPassword(req.Password)
@@ -86,12 +85,12 @@ func (s *service) Register(ctx context.Context, req *RegisterRequest) error {
 func (s *service) Refresh(ctx context.Context, refreshCookie string) (*RefreshResponse, error) {
 	userID, err := s.cache.Get(ctx, refreshCookie)
 	if err != nil {
-		return nil, err
+		return nil, constant.ErrInvalidRefreshToken
 	}
 
 	user, err := s.repository.FindUserByID(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, constant.ErrInvalidRefreshToken
 	}
 
 	newAccessToken, err := s.jwt.GenerateToken(user.ID.String(), user.Email, user.Role, 15*time.Minute)

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/AriaPutra01/go-commerce/internal/constant"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,13 +19,13 @@ func NewHandler(service *service) *handler {
 func (h *handler) Login(c *gin.Context) {
 	req := new(LoginRequest)
 	if err := c.ShouldBindJSON(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+		c.Error(err)
 		return
 	}
 
 	result, err := h.service.Login(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
+		c.Error(err)
 		return
 	}
 
@@ -45,14 +46,14 @@ func (h *handler) Login(c *gin.Context) {
 
 func (h *handler) Register(c *gin.Context) {
 	req := new(RegisterRequest)
-	if err := c.ShouldBind(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+	if err := c.ShouldBindJSON(req); err != nil {
+		c.Error(err)
 		return
 	}
 
 	err := h.service.Register(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
+		c.Error(err)
 		return
 	}
 
@@ -65,13 +66,13 @@ func (h *handler) Register(c *gin.Context) {
 func (h *handler) Refresh(c *gin.Context) {
 	refreshCookie, err := c.Cookie("rt")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+		c.Error(constant.ErrInvalidRefreshToken)
 		return
 	}
 
 	result, err := h.service.Refresh(c.Request.Context(), refreshCookie)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
+		c.Error(err)
 		return
 	}
 
