@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/AriaPutra01/go-commerce/internal/cache"
+	"github.com/AriaPutra01/go-commerce/internal/constant"
 	"github.com/AriaPutra01/go-commerce/internal/token"
 	"github.com/AriaPutra01/go-commerce/internal/util"
+	"github.com/google/uuid"
 )
 
 type service struct {
@@ -51,4 +53,32 @@ func (s *service) Login(ctx context.Context, req *LoginRequest) (*LoginResponse,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
+}
+
+func (s *service) Register(ctx context.Context, req *RegisterRequest) error {
+	return s.repository.Transaction(ctx, func(repo Repository) error {
+		isTaken, err := repo.ExistsUserByEmail(ctx, req.Email)
+		if err != nil {
+			return err
+		}
+		if isTaken {
+			return errors.New("email is used")
+		}
+
+		hashedPass, err := util.HashPassword(req.Password)
+		if err != nil {
+			return err
+		}
+
+		newUser := &User{
+			ID:           uuid.New(),
+			Email:        req.Email,
+			PasswordHash: hashedPass,
+			FullName:     req.FullName,
+			Phone:        &req.Phone,
+			Role:         string(constant.RoleUser),
+		}
+
+		return repo.CreateUser(ctx, newUser)
+	})
 }

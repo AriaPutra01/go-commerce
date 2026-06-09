@@ -9,6 +9,8 @@ import (
 type Repository interface {
 	Transaction(ctx context.Context, fn func(repo Repository) error) error
 	FindUserByEmail(ctx context.Context, email string) (*User, error)
+	ExistsUserByEmail(ctx context.Context, email string) (bool, error)
+	CreateUser(ctx context.Context, user *User) error
 }
 
 type repository struct {
@@ -37,4 +39,19 @@ func (r *repository) FindUserByEmail(ctx context.Context, email string) (*User, 
 		return nil, err
 	}
 	return user, nil
+}
+
+func (r *repository) ExistsUserByEmail(ctx context.Context, email string) (bool, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&User{}).Where("email = ?", email).Limit(1).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *repository) CreateUser(ctx context.Context, user *User) error {
+	if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
+		return err
+	}
+	return nil
 }

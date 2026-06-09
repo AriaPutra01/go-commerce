@@ -17,4 +17,5 @@ func NewRoute(app *gin.Engine, handler *handler) *route {
 func (r *route) RegisterRoute() {
 	auth := r.app.Group("/api/v1/auth")
 	auth.POST("/login", r.handler.Login)
+	auth.POST("/register", r.handler.Register)
 }

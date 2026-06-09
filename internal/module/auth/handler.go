@@ -42,3 +42,22 @@ func (h *handler) Login(c *gin.Context) {
 		"message": "Login Successfully",
 	})
 }
+
+func (h *handler) Register(c *gin.Context) {
+	req := new(RegisterRequest)
+	if err := c.ShouldBind(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	err := h.service.Register(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"message": "Register user Successfully",
+	})
+}
