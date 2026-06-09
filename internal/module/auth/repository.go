@@ -8,6 +8,7 @@ import (
 
 type Repository interface {
 	Transaction(ctx context.Context, fn func(repo Repository) error) error
+	FindUserByID(ctx context.Context, id string) (*User, error)
 	FindUserByEmail(ctx context.Context, email string) (*User, error)
 	ExistsUserByEmail(ctx context.Context, email string) (bool, error)
 	CreateUser(ctx context.Context, user *User) error
@@ -36,6 +37,14 @@ func (r *repository) Transaction(ctx context.Context, fn func(repo Repository) e
 func (r *repository) FindUserByEmail(ctx context.Context, email string) (*User, error) {
 	user := new(User)
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (r *repository) FindUserByID(ctx context.Context, id string) (*User, error) {
+	user := new(User)
+	if err := r.db.WithContext(ctx).Where("id = ?", id).First(user).Error; err != nil {
 		return nil, err
 	}
 	return user, nil

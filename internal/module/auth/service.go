@@ -82,3 +82,35 @@ func (s *service) Register(ctx context.Context, req *RegisterRequest) error {
 		return repo.CreateUser(ctx, newUser)
 	})
 }
+
+func (s *service) Refresh(ctx context.Context, refreshCookie string) (*RefreshResponse, error) {
+	userID, err := s.cache.Get(ctx, refreshCookie)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := s.repository.FindUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	newAccessToken, err := s.jwt.GenerateToken(user.ID.String(), user.Email, user.Role, 15*time.Minute)
+	if err != nil {
+		return nil, err
+	}
+
+	newRefreshToken := fmt.Sprintf("refresh:%s", rand.Text())
+
+	if err := s.cache.Save(ctx, newRefreshToken, user.ID.String(), 7*24*time.Hour); err != nil {
+		return nil, err
+	}
+
+	if err := s.cache.Delete(ctx, refreshCookie); err != nil {
+		return nil, err
+	}
+
+	return &RefreshResponse{
+		AccessToken:  newAccessToken,
+		RefreshToken: newRefreshToken,
+	}, nil
+}

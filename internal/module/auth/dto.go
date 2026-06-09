@@ -16,3 +16,8 @@ type RegisterRequest struct {
 	FullName string `json:"full_name" binding:"required,min=2,max=100"`
 	Phone    string `json:"phone" binding:"required,min=11,max=12"`
 }
+
+type RefreshResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
