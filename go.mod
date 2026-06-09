@@ -3,13 +3,16 @@ module github.com/AriaPutra01/go-commerce
 go 1.25.5
 
 require (
+	github.com/gin-contrib/cors v1.7.7
+	github.com/gin-contrib/requestid v1.0.6
+	github.com/gin-contrib/slog v1.2.1
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
+	github.com/orandin/slog-gorm v1.4.0
 	github.com/redis/go-redis/v9 v9.20.0
-	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/viper v1.21.0
 	golang.org/x/crypto v0.52.0
 	gorm.io/driver/postgres v1.6.0

@@ -2,17 +2,24 @@ package app
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+	"os"
 	"reflect"
 	"strings"
+	"time"
 
+	"github.com/AriaPutra01/go-commerce/internal/config"
 	"github.com/AriaPutra01/go-commerce/internal/exception"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/requestid"
+	ginSlog "github.com/gin-contrib/slog"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 )
 
-func NewGin() *gin.Engine {
+func NewGin(cfg *config.Config, log *slog.Logger) *gin.Engine {
 	app := gin.Default()
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -25,16 +32,43 @@ func NewGin() *gin.Engine {
 		})
 	}
 
-	app.Use(ErrorHandler())
+	app.Use(requestid.New())
+	app.Use(ginSlog.SetLogger(
+		ginSlog.WithWriter(os.Stdout),
+		ginSlog.WithDefaultLevel(slog.Level(cfg.LogLevel)),
+	))
+	app.Use(MaxAllowed(20))
+	app.Use(ErrorHandler(log))
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Timezone"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	return app
 }
 
-func ErrorHandler() gin.HandlerFunc {
+func MaxAllowed(n int) gin.HandlerFunc {
+	sem := make(chan struct{}, n)
 	return func(c *gin.Context) {
-		c.Next() // Process the request first
+		select {
+		case sem <- struct{}{}:
+			defer func() { <-sem }()
+			c.Next()
+		default:
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"message": "server busy"})
+		}
+	}
+}
 
-		// Check if any errors were added to the context
+func ErrorHandler(log *slog.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
 		if len(c.Errors) > 0 {
 			err := c.Errors.Last().Err
 
@@ -61,9 +95,12 @@ func ErrorHandler() gin.HandlerFunc {
 				return
 			}
 
+			log.Error(err.Error())
+
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"code":    "INTERNAL_SERVER_ERROR",
 				"message": "An unexpected error occurred",
+				"success": false,
 			})
 		}
 	}

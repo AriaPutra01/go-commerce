@@ -2,36 +2,40 @@ package database
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 	"time"
 
 	"github.com/AriaPutra01/go-commerce/internal/config"
+	slogGorm "github.com/orandin/slog-gorm"
 
-	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
-func NewDatabase(cfg *config.Config, log *logrus.Logger) *gorm.DB {
+func NewDatabase(cfg *config.Config, log *slog.Logger) *gorm.DB {
+	gormLogger := slogGorm.New(
+		slogGorm.WithHandler(log.Handler()),
+		slogGorm.WithTraceAll(),
+		slogGorm.WithSlowThreshold(200*time.Millisecond),
+		slogGorm.SetLogLevel(slogGorm.ErrorLogType, slog.LevelError),
+		slogGorm.SetLogLevel(slogGorm.SlowQueryLogType, slog.LevelWarn),
+		slogGorm.SetLogLevel(slogGorm.DefaultLogType, slog.LevelDebug),
+	)
+
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable search_path=%s",
 		cfg.DBHost, cfg.DBUsername, cfg.DBPassword, cfg.DBDatabase, cfg.DBPort, cfg.DBSchema)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.New(&logrusWriter{Logger: log}, logger.Config{
-			SlowThreshold:             time.Second * 5,
-			Colorful:                  false,
-			IgnoreRecordNotFoundError: true,
-			ParameterizedQueries:      true,
-			LogLevel:                  logger.Info,
-		}),
-	})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: gormLogger})
 	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
+		log.Error(fmt.Sprintf("failed to connect database: %v", err))
+		os.Exit(1)
 	}
 
 	connection, err := db.DB()
 	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
+		log.Error(fmt.Sprintf("failed to connect database: %v", err))
+		os.Exit(1)
 	}
 
 	connection.SetMaxIdleConns(cfg.DBPoolIdle)
@@ -39,12 +43,4 @@ func NewDatabase(cfg *config.Config, log *logrus.Logger) *gorm.DB {
 	connection.SetConnMaxLifetime(time.Second * time.Duration(cfg.DBPoolLifetime))
 
 	return db
-}
-
-type logrusWriter struct {
-	Logger *logrus.Logger
-}
-
-func (l *logrusWriter) Printf(message string, args ...interface{}) {
-	l.Logger.Tracef(message, args...)
 }

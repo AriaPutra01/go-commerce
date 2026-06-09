@@ -15,8 +15,8 @@ import (
 
 func main() {
 	cfg := config.Load()
-	engine := app.NewGin()
 	log := logger.NewLogger(cfg)
+	engine := app.NewGin(cfg, log)
 	jwtMaker := token.NewJWTMaker(cfg.SecretKey)
 	db := database.NewDatabase(cfg, log)
 	rdb := cache.NewRedis(cfg)
@@ -51,5 +51,5 @@ func main() {
 
 	// Wait for the graceful shutdown to complete
 	<-done
-	log.Println("Graceful shutdown complete.")
+	log.Info("Graceful shutdown complete.")
 }

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +23,7 @@ type BootstrapConfig struct {
 	DB       *gorm.DB
 	RDB      *redis.Client
 	App      *gin.Engine
-	Log      *logrus.Logger
+	Log      *slog.Logger
 	Config   *config.Config
 	JWTMaker *token.JWTMaker
 }
