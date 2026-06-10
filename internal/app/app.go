@@ -11,6 +11,7 @@ import (
 
 	"github.com/AriaPutra01/go-commerce/internal/cache"
 	"github.com/AriaPutra01/go-commerce/internal/config"
+	"github.com/AriaPutra01/go-commerce/internal/middleware"
 	"github.com/AriaPutra01/go-commerce/internal/module/auth"
 	"github.com/AriaPutra01/go-commerce/internal/token"
 
@@ -30,10 +31,11 @@ type BootstrapConfig struct {
 
 func Bootstrap(config *BootstrapConfig) {
 	cache := cache.NewRedisStore(config.RDB)
+	middleware := middleware.NewMiddleware(config.JWTMaker)
 	authRepository := auth.NewRepository(config.DB)
 	authService := auth.NewService(config.JWTMaker, authRepository, cache)
 	authHandler := auth.NewHandler(authService)
-	authRoute := auth.NewRoute(config.App, authHandler)
+	authRoute := auth.NewRoute(config.App, middleware, authHandler)
 	authRoute.RegisterRoute()
 }
 

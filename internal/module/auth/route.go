@@ -1,16 +1,21 @@
 package auth
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/AriaPutra01/go-commerce/internal/middleware"
+	"github.com/gin-gonic/gin"
+)
 
 type route struct {
-	app     *gin.Engine
-	handler *handler
+	app        *gin.Engine
+	middleware *middleware.Middleware
+	handler    *handler
 }
 
-func NewRoute(app *gin.Engine, handler *handler) *route {
+func NewRoute(app *gin.Engine, middleware *middleware.Middleware, handler *handler) *route {
 	return &route{
-		app:     app,
-		handler: handler,
+		app:        app,
+		middleware: middleware,
+		handler:    handler,
 	}
 }
 
