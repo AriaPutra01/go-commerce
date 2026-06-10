@@ -11,4 +11,5 @@ var (
 	ErrEmailAlreadyExists  = &exception.AppError{StatusCode: http.StatusConflict, ErrCode: "EMAIL_ALREADY_EXISTS", Message: "Email has been registered"}
 	ErrInvalidRefreshToken = &exception.AppError{StatusCode: http.StatusUnauthorized, ErrCode: "INVALID_REFRESH_TOKEN", Message: "The login session has expired, please log in again."}
 	ErrInvalidAccessToken  = &exception.AppError{StatusCode: http.StatusUnauthorized, ErrCode: "INVALID_ACCESS_TOKEN", Message: "Access token has expired. Please refresh your credentials."}
+	ErrAccessForbidden     = &exception.AppError{StatusCode: http.StatusForbidden, ErrCode: "ACCESS_FORBIDDEN", Message: "You don't have permission to access on this source."}
 )
