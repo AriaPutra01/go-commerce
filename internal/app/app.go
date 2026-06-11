@@ -13,6 +13,7 @@ import (
 	"github.com/AriaPutra01/go-commerce/internal/config"
 	"github.com/AriaPutra01/go-commerce/internal/middleware"
 	"github.com/AriaPutra01/go-commerce/internal/module/auth"
+	"github.com/AriaPutra01/go-commerce/internal/module/product"
 	"github.com/AriaPutra01/go-commerce/internal/token"
 
 	"github.com/gin-gonic/gin"
@@ -32,11 +33,21 @@ type BootstrapConfig struct {
 func Bootstrap(config *BootstrapConfig) {
 	cache := cache.NewRedisStore(config.RDB)
 	middleware := middleware.NewMiddleware(config.JWTMaker)
+
 	authRepository := auth.NewRepository(config.DB)
+	productRepository := product.NewRepository(config.DB)
+
 	authService := auth.NewService(config.JWTMaker, authRepository, cache)
+	productService := product.NewService(productRepository)
+
 	authHandler := auth.NewHandler(authService)
+	productHandler := product.NewHandler(productService)
+
 	authRoute := auth.NewRoute(config.App, middleware, authHandler)
+	productRoute := product.NewRoute(config.App, middleware, productHandler)
+
 	authRoute.RegisterRoute()
+	productRoute.RegisterRoute()
 }
 
 func GracefulShutdown(apiServer *http.Server, done chan bool) {
